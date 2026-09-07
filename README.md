@@ -5,7 +5,13 @@ Notes and practice material on Log-Structured Merge (LSM) trees and related data
 ## Table of Contents
 
 - [Conceptual Video Notes](#conceptual-video-notes)
+
   - [1. LSM Trees](#1-lsm-trees)
+    - [1st Concept: Sorted String Tables (SSTables)](#1st-concept-sorted-string-tables-sstables)
+    - [2nd Concept: Memtable](#2nd-concept-memtable)
+    - [3rd Concept: Compaction](#3rd-concept-compaction)
+  - [2. System Design: LSM Trees](#2-system-design-lsm-trees)
+  - [3. LSM trees - write and read lifecycles explained](#3-lsm-trees---write-and-read-lifecycles-explained)
 
 ## Conceptual Video Notes
 
@@ -86,7 +92,7 @@ This runs on an interval (e.g., every 30 minutes) and compacts all tables into a
 
 **Bloom filters**
 
-- A bloom filter gives a fast, O(1) check for whether a key might be present in a table. It has no false negatives — if it says a key is *not* present, it definitely isn't — but it can have false positives, saying a key is present when it actually isn't.
+- A bloom filter gives a fast, O(1) check for whether a key might be present in a table. It has no false negatives — if it says a key is _not_ present, it definitely isn't — but it can have false positives, saying a key is present when it actually isn't.
 
 When a write request comes in, it's first written to a Write-Ahead Log (WAL) on disk. This lets us recover the write if there's a failure before it makes it into the memtable/SSTable.
 
@@ -108,3 +114,11 @@ Finally, a compactor runs in the background (e.g., every 30 minutes), compacting
 
 - Slower reads: memtable → bloom filters → SSTables
 - Compaction process can interfere with ongoing reads/writes
+
+### 2. System Design: LSM Trees
+
+- Video: [System Design: LSM Trees](https://www.youtube.com/watch?v=P2xtlLymqqI)
+
+### 3. LSM trees - write and read lifecycles explained
+
+- Video: [LSM trees - write and read lifecycles explained](https://www.youtube.com/watch?v=3KXDlS2tTRY)
