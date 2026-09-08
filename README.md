@@ -10,8 +10,9 @@ Notes and practice material on Log-Structured Merge (LSM) trees and related data
     - [1st Concept: Sorted String Tables (SSTables)](#1st-concept-sorted-string-tables-sstables)
     - [2nd Concept: Memtable](#2nd-concept-memtable)
     - [3rd Concept: Compaction](#3rd-concept-compaction)
-  - [2. System Design: LSM Trees](#2-system-design-lsm-trees)
-  - [3. LSM trees - write and read lifecycles explained](#3-lsm-trees---write-and-read-lifecycles-explained)
+
+- [Online Documentation Notes](#online-documentation-notes)
+  - [1. freeCodeCamp](#1-freecodecamp)
 
 ## Conceptual Video Notes
 
@@ -115,10 +116,101 @@ Finally, a compactor runs in the background (e.g., every 30 minutes), compacting
 - Slower reads: memtable → bloom filters → SSTables
 - Compaction process can interfere with ongoing reads/writes
 
-### 2. System Design: LSM Trees
+## Online Documentation Notes
 
-- Video: [System Design: LSM Trees](https://www.youtube.com/watch?v=P2xtlLymqqI)
+### 1. freeCodeCamp
 
-### 3. LSM trees - write and read lifecycles explained
+- Website: [How to Build an LSM Tree Storage Engine from Scratch – Full Handbook](https://www.freecodecamp.org/news/build-an-lsm-tree-storage-engine-from-scratch-handbook/)
 
-- Video: [LSM trees - write and read lifecycles explained](https://www.youtube.com/watch?v=3KXDlS2tTRY)
+- Write-Ahead Log (WAL):
+
+  -
+
+- Manifest File.
+
+**Laying the Foundation of the Database System**
+When I'm designing or building a system, I like to think that the system already exists, and I assume that I can just start calling functions that support the features of the system:
+
+```go
+db, err := NewDB[string, string](3, 3) // create a new DB with some parameters (more on this later)
+db.Put("a", "apple")                   // add a key-value pair
+db.Delete("a")                         // delete a key
+val, _ := db.Get("a")                  // get the value for a key
+```
+
+### MemTable: In-Memory Data Storage
+
+At the core of the MemTable, you can use a map as the underlying data structure to store key-value pairs. The map allows for fast lookups, insertions, and deletions, making it ideal for in-memory storage where performance is crucial. The structure for MemTable looks like this:
+
+```go
+type MemTable[K comparable, V any] struct {
+    data map[K]V // primary storage map; generic so it can store any kind of data
+}
+```
+
+The above code defines a `MemTable` struct, where `data` is a map that acts as the main storage for our key-value pairs. Since `data` is a map, you can quickly add, retrieve, or delete values associated with a given key.
+
+The following functions fit naturally:
+
+```go
+// Put
+func (m *MemTable[K, V]) Put(key K, value V) {
+    m.data[key] = value
+}
+```
+
+```go
+// Get
+func (m *MemTable[K, V]) Get(key K) (V, bool) {
+    value, ok := m.data[key]
+    var zero V
+    if !ok {
+        return zero, false
+    }
+    return value, true
+}
+```
+
+```go
+// Constructor
+func NewMemTable[K comparable, V any]() *MemTable[K, V] {
+    return &MemTable[K, V]{
+        data: make(map[K]V),
+    }
+}
+```
+
+#### C++ equivalent
+
+```cpp
+template <typename K, typename V>
+class MemTable {
+public:
+    MemTable() = default; // unordered_map default-constructs empty; no explicit init needed
+
+    void Put(const K& key, const V& value) {
+        data_[key] = value;
+    }
+
+    std::optional<V> Get(const K& key) const {
+        auto it = data_.find(key);
+        if (it == data_.end()) {
+            return std::nullopt;
+        }
+        return it->second;
+    }
+
+private:
+    std::unordered_map<K, V> data_;
+};
+```
+
+Notes on the translation:
+
+- Go's `comparable`/`any` generic constraints map to an unconstrained C++ template — `std::unordered_map<K, V>` requires `K` to be hashable and equality-comparable, which is checked at instantiation.
+- Go's `(V, bool)` return idiom becomes `std::optional<V>`, which is the more idiomatic C++ way to express "a value, or nothing."
+- Go's package-level `NewMemTable` factory becomes a plain constructor — C++ classes don't need a separate `New*` function.
+
+### 2. Medium
+
+- Website: [Building an LSM-Tree from Scratch: Implementing Memtable, SSTable, and WAL](https://medium.com/@rahulhind/building-an-lsm-tree-from-scratch-implementing-memtable-sstable-and-wal-805e2660664b)
